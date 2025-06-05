@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #800000;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            color: rgb(0, 0, 0);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #800000;
+            color: white;
+            border: 1px solid #800000(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .card-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .card-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            border: 1px solid #f5c6cb;
+        }
+        .logo{
+            width: 80%;
+            height: 90%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>Dashboard do Sistema</h1>
+            <div>
+                <img class="logo" src="maicosoft_logo.jpg" alt="logo">
+            </div>
+            <div class="user-info">
+                <span>Olá, <span id="username">Usuário</span>!</span>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Carregando informações...</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="welcome-card">
+                <h2>Bem-vindo ao Sistema!</h2>
+                <p>Você está autenticado e pode acessar todas as funcionalidades disponíveis.</p>
+                <p><strong>Token válido até:</strong> <span id="tokenExpiry"></span></p>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h2>Gerenciar Usuários</h2>
+                    <p>Funcionalidades exclusivas para administradores.</p>
+                    <button class="card-button" onclick="window.location.href='indexUsuario.html'">Entrar</button>
+                </div>
+
+                <div class="card">
+                    <h2>Gerenciar Clientes</h2>
+                    <p>Adicione, exclua e edite Usuários do Sistema.</p>
+                    <button class="card-button" onclick="window.location.href='indexCliente.html'">Entrar</button>
+                </div>
+            </div>
+
+            <div id="data-display" style="margin-top: 2rem;"></div>
+        </div>
+    </div>
+
+    <script>
+
+        const API_BASE_URL = 'http://localhost:9856';
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('jwt_token');
+            if (!token) {
+                throw new Error("Token JWT não encontrado.");
+            }
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+        window.addEventListener('load', function() {
+            checkAuthentication();
+        });
+
+        function checkAuthentication() {
+            const token = localStorage.getItem('jwt_token');
+            const username = localStorage.getItem('username');
+            const expires = localStorage.getItem('token_expires');
+
+            if (!token || !expires || Date.now() >= parseInt(expires)) {
+                alert('Sua sessão expirou. Faça login novamente.');
+                window.location.href = '/login.html';
+                return;
+            }
+            document.getElementById('username').textContent = username || 'Usuário';
+            document.getElementById('tokenExpiry').textContent = new Date(parseInt(expires)).toLocaleString();
+            
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            }, 1000);
+        }
+
+        async function makeAuthenticatedRequest(url) {
+            try {
+                const headers = getAuthHeaders();
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers
+                });
+            
+                if (response.status === 401 || response.status === 403) {
+                    alert('Acesso negado ou sessão expirada.');
+                    logout();
+                    return null;
+                }
+            
+                return await response.json();
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                showError('Erro de autenticação ou conexão. Faça login novamente.');
+                logout();
+                return null;
+            }
+        }
+
+
+        async function loadUserProfile() {
+            const data = await makeAuthenticatedRequest(`${API_BASE_URL}/indexCliente.html`);
+            if (data) {
+                displayData('Perfil do Usuário', JSON.stringify(data, null, 2));
+            }
+        }
+
+        async function loadProtectedData() {
+            const data = await makeAuthenticatedRequest(`${API_BASE_URL}/clientes`);
+            if (data) {
+                displayData('Dados Protegidos', 'Dados carregados com sucesso! Você tem acesso a estas informações.');
+            }
+        }
+
+        async function loadAdminData() {
+            const data = await makeAuthenticatedRequest(`${API_BASE_URL}/clientes`);
+            if (data) {
+                displayData('Área Administrativa', JSON.stringify(data, null, 2));
+            }
+        }
+
+        function displayData(title, content) {
+            const displayDiv = document.getElementById('data-display');
+            displayDiv.innerHTML = `
+                <div class="card">
+                    <h3>${title}</h3>
+                    <pre style="background: #f8f9fa; padding: 1rem; border-radius: 5px; overflow-x: auto;">${content}</pre>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const displayDiv = document.getElementById('data-display');
+            displayDiv.innerHTML = `
+                <div class="error-message">
+                    <strong>Erro:</strong> ${message}
+                </div>
+            `;
+        }
+
+        function logout() {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('token_expires');
+            window.location.href = '/login.html';
+        }
+        setInterval(() => {
+            const expires = localStorage.getItem('token_expires');
+            if (expires && Date.now() >= parseInt(expires)) {
+                alert('Sua sessão expirou. Você será redirecionado para o login.');
+                logout();
+            }
+        }, 60000); 
+    </script>
+</body>
+</html>

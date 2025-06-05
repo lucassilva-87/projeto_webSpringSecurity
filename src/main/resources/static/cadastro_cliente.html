@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cadastro de Cliente - MaiconSoft</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 25px;
+        }
+    
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+    
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 25px;
+        }
+    
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 19px;
+            width: 19px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+    
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+    
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .section-buttons {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            padding: 10px;
+            z-index: 1000;
+            border-bottom: 1px solid #ccc;
+        }   
+        label.required::after {
+            content: " *";
+            color: red;
+        }
+
+        .input-estilizado {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 16px;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+            background-color: #fff;
+            color: #495057;
+            box-sizing: border-box;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .input-estilizado {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23999" class="bi bi-chevron-down" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px 16px;
+        }
+
+        .input-estilizado:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 5px rgba(0, 123, 255, .25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="maicosoft_logo.jpg">
+            </div>
+            <h1>Cadastro de Cliente</h1>
+        </header>
+        <div class="section-buttons">
+            <button onclick="scrollToSection('dadosEmpresa')" class="section-btn">Dados da Empresa</button>
+            <button onclick="scrollToSection('dadosEndereco')" class="section-btn">Endereço</button>
+            <button onclick="scrollToSection('dadosContato')" class="section-btn">Contato</button>
+            <button onclick="scrollToSection('dadosAdicionais')" class="section-btn">Adicionais</button>
+        </div>
+        <form id="formCadastro" onsubmit="salvarCliente(event)">
+        <section id="dadosEmpresa" class="form-section">
+            <h2>Dados da Empresa</h2>
+            <table>
+                <tr>
+                    <td><label for="cnpj" class="required">CNPJ</label></td>
+                    <td><input type="text" id="cnpj" name="cnpj" onblur="buscarCNPJ()" maxlength="18" placeholder="00.000.000/0000-00" required></td>
+                </tr>
+                <tr>
+                    <td><label for="loja" class="required">Loja</label></td>
+                    <td><input type="text" id="loja" name="loja" maxlength="3" required></td>
+                </tr>
+                <tr>
+                    <td><label for="nome" class="required">Nome (Razão Social)</label></td>
+                    <td><input type="text" id="nome" name="nome" required></td>
+                </tr>
+                <tr>
+                    <td><label for="nomeFantasia">Nome Fantasia</label></td>
+                    <td><input type="text" id="nomeFantasia"  maxlength="100" name="nomeFantasia" ></td>
+                </tr>
+                <tr>
+                    <td><label for="tipo" class="required">Tipo</label></td>
+                    <td>
+                        <select id="tipo" name="tipo" class="input-estilizado" required>
+                            <option value="">Selecione...</option>
+                            <option value="F">F - Cons. Final</option>
+                            <option value="L">L - Produtor Rural</option>
+                            <option value="R">R - Revendedor</option>
+                            <option value="S">S - Solidario</option>
+                            <option value="X">X - Exportacao</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="dataAbertura" class="required">Data de Abertura</label></td>
+                    <td><input type="text" id="dataAbertura" name="dataAbertura" required></td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="dadosEndereco" class="form-section">
+            <h2>Dados de Endereço</h2>
+            <table>
+                <tr>
+                    <td><label for="cep" class="required">CEP</label></td>
+                    <td><input type="text" id="cep" name="cep" onblur="buscarCEP()" maxlength="9" placeholder="12345-678" required></td>
+                </tr>
+                <tr>
+                    <td><label for="logradouro" class="required">Logradouro</label></td>
+                    <td><input type="text" id="logradouro" name="logradouro" required></td>
+                </tr>
+                <tr>
+                    <td><label for="numero" class="required">Número</label></td>
+                    <td><input type="text" id="numero" name="numero" required></td>
+                </tr>
+                <tr>
+                    <td><label for="complemento">Complemento</label></td>
+                    <td><input type="text" id="complemento" maxlength="50" name="complemento"></td>
+                </tr>
+                <tr>
+                    <td><label for="bairro" class="required">Bairro</label></td>
+                    <td><input type="text" id="bairro" name="bairro" required></td>
+                </tr>
+                <tr>
+                    <td><label for="municipio" class="required">Cidade</label></td>
+                    <td><input type="text" id="municipio" name="municipio" required></td>
+                </tr>
+                <tr>
+                    <td><label for="estado" class="required">Estado</label></td>
+                    <td><input type="text" id="estado" name="estado" required></td>
+                </tr>
+                <tr>
+                    <td><label for="pais" class="required">País</label></td>
+                    <td><input type="text" id="pais" name="pais" value="Brasil" required></td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="dadosContato" class="form-section">
+            <h2>Dados de Contato</h2>
+            <table>
+                <tr>
+                    <td><label for="telefone" class="required">Telefone</label></td>
+                    <td><input type="text" id="telefone" name="telefone" maxlength="11" placeholder="(00) 00000-0000" required></td>
+                </tr>
+                <tr>
+                    <td><label for="email" class="required">E-mail</label></td>
+                    <td><input type="email" id="email" maxlength="100" name="email" required></td>
+                </tr>
+                <tr>
+                    <td><label for="site">Site</label></td>
+                    <td><input type="url" id="site" maxlength="100" ame="site"></td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="dadosAdicionais" class="form-section">
+            <h2>Dados Adicionais</h2>
+            <table>
+                <tr>
+                    <td><label for="telefone2">Telefone 2</label></td>
+                    <td><input type="text" id="telefone2" name="telefone2" maxlength="11" placeholder="(00) 00000-0000"></td>
+                </tr>
+                <tr>
+                    <td><label for="telefone3">Telefone 3</label></td>
+                    <td><input type="text" id="telefone3" name="telefone3" maxlength="11" placeholder="(00) 00000-0000"></td>
+                </tr>
+                <tr>
+                    <td><label for="inscricaoEstadual">Inscrição Estadual</label></td>
+                    <td><input type="text" id="inscricaoEstadual" maxlength="30" name="inscricaoEstadual"></td>
+                </tr>
+                <tr>
+                    <td><label for="inscricaoMunicipal">Inscrição Municipal</label></td>
+                    <td><input type="text" id="inscricaoMunicipal"maxlength="30" name="inscricaoMunicipal"></td>
+                </tr>
+                <tr>
+                    <td><label for="codCNAE">Código CNAE</label></td>
+                    <td><input type="text" id="codCNAE" maxlength="10" name="codCNAE"></td>
+                </tr>
+                <tr>
+                    <td><label for="status">Cadastro Ativo</label></td>
+                    <td>
+                        <label class="switch">
+                            <input type="checkbox" id="statusToggle" name="statusToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <div class="action-buttons">
+            <button type="button" onclick="limparFormulario()" class="action-btn btn-secondary">Limpar</button>
+            <button type="submit" class="action-btn btn-primary">Salvar</button>
+            <button type="button" onclick="voltar()" class="action-btn btn-secondary">Voltar</button>
+        </div>
+
+    </div>
+</form>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="url"], input[type="date"]');
+
+      
+          inputs.forEach(input => {
+            input.addEventListener('focus', (event) => {
+              const el = event.target;
+              const length = el.value.length;
+              if (['text', 'search', 'tel', 'password'].includes(el.type)) {
+                el.setSelectionRange(length, length);
+            }
+
+            });
+          });
+        });
+
+        document.addEventListener('keydown', function(event) {
+    if (event.key === 'Tab') {
+        const focusableRequired = Array.from(document.querySelectorAll('input[required], select[required], textarea[required]'));
+        const currentIndex = focusableRequired.indexOf(document.activeElement);
+
+        if (event.shiftKey) {
+            if (currentIndex > 0) {
+                event.preventDefault();
+                focusableRequired[currentIndex - 1].focus();
+            }
+        } else {
+            if (currentIndex > -1 && currentIndex < focusableRequired.length - 1) {
+                event.preventDefault();
+                focusableRequired[currentIndex + 1].focus();
+            }
+        }
+    }
+});
+
+      </script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+  emailjs.init("-6JavK4-ihXoH4X3j");
+</script>
+
+</body>
+     <script>
+        const API_BASE_URL = 'http://localhost:9856';
+        window.addEventListener('load', function() {
+            checkAuthentication();
+        });
+
+        function checkAuthentication() {
+            const token = localStorage.getItem('jwt_token');
+            const username = localStorage.getItem('username');
+            const expires = localStorage.getItem('token_expires');
+
+            if (!token || !expires || Date.now() >= parseInt(expires)) {
+                alert('Sua sessão expirou. Faça login novamente.');
+                window.location.href = '/login.html';
+                return;
+            }
+            document.getElementById('username').textContent = username || 'Usuário';
+            document.getElementById('tokenExpiry').textContent = new Date(parseInt(expires)).toLocaleString();
+            
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            }, 1000);
+        }
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('jwt_token');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        async function makeAuthenticatedRequest(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                if (response.status === 401) {
+                    alert('Sua sessão expirou. Faça login novamente.');
+                    logout();
+                    return null;
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                showError('Erro de conexão. Tente novamente.');
+                return null;
+            }
+        }
+        </script>
+    <script src="script.js"></script>
+
+</html>

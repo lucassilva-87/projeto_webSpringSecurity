@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listagem de Clientes - MaiconSoft</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="maicosoft_logo.jpg">
+            </div>
+            <h1>Clientes</h1>
+            <div class="filters">
+                <input type="text" id="filterCod" class="filter-input" placeholder="Código">
+                <input type="text" id="filterCnpj" class="filter-input" placeholder="CNPJ">
+                <input type="text" id="filterNome" class="filter-input" placeholder="Nome">
+                <button onclick="filterTable()" class="filter-btn"><i class="fas fa-search"></i> Filtrar</button>
+            </div>
+        </header>
+
+        <section class="clients-list">
+            <div class="table-container">
+                <table id="clientesTable">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>CNPJ</th>
+                            <th>Nome</th>
+                            <th>Município</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsData">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="buttons-container">
+                <button id="accessClientButton" class="action-btn btn-primary" onclick="accessClient()"><i class="fas fa-eye"></i> Acessar Cliente</button>
+                <button onclick="cadastrarCliente()" class="action-btn btn-primary"><i class="fas fa-eye"></i> Cadastrar Cliente</button>
+                <button type="button" onclick="window.location.href = '/index.html'" class="action-btn btn-secondary">Voltar</button>
+            </div>
+        </section>
+    </div>
+     <script>
+        const API_BASE_URL = 'http://localhost:9856';
+        window.addEventListener('load', function() {
+            checkAuthentication();
+        });
+
+        function checkAuthentication() {
+            const token = localStorage.getItem('jwt_token');
+            const username = localStorage.getItem('username');
+            const expires = localStorage.getItem('token_expires');
+
+            if (!token || !expires || Date.now() >= parseInt(expires)) {
+                alert('Sua sessão expirou. Faça login novamente.');
+                window.location.href = '/login.html';
+                return;
+            }
+            document.getElementById('username').textContent = username || 'Usuário';
+            document.getElementById('tokenExpiry').textContent = new Date(parseInt(expires)).toLocaleString();
+            
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            }, 1000);
+        }
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('jwt_token');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        async function makeAuthenticatedRequest(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                if (response.status === 401) {
+                    alert('Sua sessão expirou. Faça login novamente.');
+                    logout();
+                    return null;
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                showError('Erro de conexão. Tente novamente.');
+                return null;
+            }
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+    
+</html>
